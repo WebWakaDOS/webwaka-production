@@ -1,0 +1,51 @@
+{
+  "name": "webwaka-production",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "src/worker.ts",
+  "description": "WebWaka Production Suite — Manufacturing, Production Management, Supply Chain [Invariants: Build Once, Mobile First, PWA First, Offline First, Nigeria First, Africa First, Vendor Neutral AI]",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/WebWakaDOS/webwaka-production.git"
+  },
+  "keywords": ["webwaka", "cloudflare-workers", "hono", "d1", "dexie", "pwa", "offline-first", "nigeria"],
+  "author": "WebWakaDOS",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/WebWakaDOS/webwaka-production/issues"
+  },
+  "homepage": "https://github.com/WebWakaDOS/webwaka-production#readme",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "tsc --noEmit",
+    "build": "tsc --noEmit && echo 'TypeCheck passed'",
+    "deploy": "wrangler deploy --env production",
+    "deploy:staging": "wrangler deploy --env staging",
+    "build:ui": "vite build",
+    "dev:ui": "vite --host 0.0.0.0 --port 5000",
+    "preview:ui": "vite preview",
+    "test:e2e": "playwright test",
+    "test:e2e:report": "playwright test --reporter=html"
+  },
+  "dependencies": {
+    "dexie": "^4.3.0",
+    "hono": "^4.12.8",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260313.1",
+    "@playwright/test": "^1.58.2",
+    "@types/node": "^25.5.0",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.1",
+    "@vitest/coverage-v8": "^3.2.4",
+    "typescript": "^5.9.3",
+    "vite": "^8.0.1",
+    "vitest": "^3.2.4",
+    "wrangler": "^4.76.0"
+  }
+}

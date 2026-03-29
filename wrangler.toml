@@ -1,0 +1,70 @@
+# WebWaka Production Suite — Cloudflare Workers Configuration
+# Blueprint Reference: Part 3.2 — Cloudflare Workers + D1 + KV
+# Invariant 1: Build Once Use Infinitely — single worker, multiple modules
+# Invariant 5: Nigeria First — deployed to Cloudflare's African PoPs
+
+name = "webwaka-production-api"
+main = "src/worker.ts"
+compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+# ─── Default (Development) Environment ────────────────────────────────────────
+[vars]
+ENVIRONMENT = "development"
+
+[[kv_namespaces]]
+binding = "SESSIONS_KV"
+id = "PLACEHOLDER_SESSIONS_KV_DEV_ID"
+
+[[kv_namespaces]]
+binding = "RATE_LIMIT_KV"
+id = "PLACEHOLDER_RATE_LIMIT_KV_DEV_ID"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "webwaka-production-db-dev"
+database_id = "PLACEHOLDER_D1_DEV_ID"
+
+# ─── Staging Environment ──────────────────────────────────────────────────────
+[env.staging]
+name = "webwaka-production-api-staging"
+
+[env.staging.vars]
+ENVIRONMENT = "staging"
+
+[[env.staging.kv_namespaces]]
+binding = "SESSIONS_KV"
+id = "PLACEHOLDER_SESSIONS_KV_STAGING_ID"
+
+[[env.staging.kv_namespaces]]
+binding = "RATE_LIMIT_KV"
+id = "PLACEHOLDER_RATE_LIMIT_KV_STAGING_ID"
+
+[[env.staging.d1_databases]]
+binding = "DB"
+database_name = "webwaka-production-db-staging"
+database_id = "PLACEHOLDER_D1_STAGING_ID"
+
+# ─── Production Environment ───────────────────────────────────────────────────
+[env.production]
+name = "webwaka-production-api-prod"
+
+[env.production.vars]
+ENVIRONMENT = "production"
+
+[[env.production.kv_namespaces]]
+binding = "SESSIONS_KV"
+id = "PLACEHOLDER_SESSIONS_KV_PROD_ID"
+
+[[env.production.kv_namespaces]]
+binding = "RATE_LIMIT_KV"
+id = "PLACEHOLDER_RATE_LIMIT_KV_PROD_ID"
+
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "webwaka-production-db-prod"
+database_id = "PLACEHOLDER_D1_PROD_ID"
+
+# NOTE: Replace all PLACEHOLDER_* values with real Cloudflare resource IDs
+# before deploying. JWT_SECRET must be set as a Cloudflare Workers Secret
+# (not in wrangler.toml) using: wrangler secret put JWT_SECRET
