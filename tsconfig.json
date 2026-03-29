@@ -1,0 +1,22 @@
+{
+  // WebWaka OS v4 — Canonical TypeScript Configuration
+  // Blueprint Reference: Part 3.2 — Technology Stack
+  // Invariant 1: Build Once Use Infinitely — strict mode enforces reusable, type-safe code
+  "compilerOptions": {
+    "module": "nodenext",
+    "target": "esnext",
+    "types": ["@cloudflare/workers-types"],
+    "sourceMap": true,
+    "declaration": true,
+    "declarationMap": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "strict": true,
+    "jsx": "react-jsx",
+    "verbatimModuleSyntax": true,
+    "isolatedModules": true,
+    "noUncheckedSideEffectImports": true,
+    "moduleDetection": "force",
+    "skipLibCheck": true
+  }
+}
