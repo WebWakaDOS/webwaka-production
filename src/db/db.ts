@@ -16,7 +16,7 @@
  * 3. Conflicts are resolved server-side (last-write-wins per tenant)
  */
 
-import Dexie, { type Table } from 'dexie';
+import { Dexie, type Table } from 'dexie';
 
 // ─── Offline Table Interfaces ─────────────────────────────────────────────────
 // These mirror the D1 schema in migrations/001_production_schema.sql

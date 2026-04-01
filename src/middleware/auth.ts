@@ -4,22 +4,25 @@
  *
  * Invariant 1: Build Once Use Infinitely
  * ALL auth primitives are imported from @webwaka/core.
- * NEVER re-implement validateJWT, requireRole, rateLimit, or secureCORS here.
+ * NEVER re-implement verifyJWT, requireRole, rateLimit, or secureCORS here.
  * This file exists solely as a vertical-local re-export for convenience
  * and to document which primitives this vertical uses.
  */
 
-// Re-export canonical auth primitives from @webwaka/core
+// Re-export canonical auth primitives from @webwaka/core v1.3.0
 // Invariant 1: Build Once Use Infinitely — single source of truth
 export {
-  validateJWT,
+  verifyJWT,
   jwtAuthMiddleware,
   requireRole,
   secureCORS,
   rateLimit,
   signJWT,
+  getAuthUser,
+  getTenantId,
   type JWTPayload,
-  type AuthConfig,
+  type WakaUser,
+  type AuthUser,
 } from '@webwaka/core';
 
 /**

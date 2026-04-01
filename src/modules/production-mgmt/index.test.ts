@@ -13,6 +13,13 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { Hono } from 'hono';
 import { productionMgmtRouter } from './index.js';
+import type { JWTPayload } from '@webwaka/core';
+
+// ─── Test Variables Type ──────────────────────────────────────────────────────
+interface TestVariables {
+  user: JWTPayload & { role: string; tenantId: string };
+  tenantId: string;
+}
 
 // ─── Mock @webwaka/core ───────────────────────────────────────────────────────
 vi.mock('@webwaka/core', () => ({
@@ -29,9 +36,17 @@ vi.mock('@webwaka/core', () => ({
 
 // ─── Test Helpers ─────────────────────────────────────────────────────────────
 function createTestApp(userRole: string = 'TENANT_ADMIN', tenantId: string = 'tenant-123') {
-  const app = new Hono();
+  const app = new Hono<{ Variables: TestVariables }>();
   app.use('*', async (c, next) => {
-    c.set('user', { sub: 'user-001', role: userRole, tenantId });
+    c.set('user', { 
+      sub: 'user-001', 
+      role: userRole, 
+      tenantId,
+      permissions: [],
+      iat: Math.floor(Date.now() / 1000),
+      exp: Math.floor(Date.now() / 1000) + 3600,
+      email: 'test@webwaka.app'
+    });
     c.set('tenantId', tenantId);
     return next();
   });

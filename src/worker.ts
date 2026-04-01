@@ -18,6 +18,7 @@ import {
   secureCORS,
   rateLimit,
   type JWTPayload,
+  type WakaUser,
 } from '@webwaka/core';
 import { productionMgmtRouter } from './modules/production-mgmt/index.js';
 
@@ -36,7 +37,13 @@ interface Variables {
   tenantId: string;
 }
 
-const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
+// AppVariables for typed c.get('user') — required by @webwaka/core v1.3.0
+export interface AppVariables {
+  user: WakaUser | undefined;
+  tenantId?: string;
+}
+
+const app = new Hono<{ Bindings: Bindings; Variables: Variables & AppVariables }>();
 
 // ─── Global CORS Middleware (Invariant 1: Build Once Use Infinitely) ──────────
 // NEVER use origin: '*' — secureCORS enforces environment-aware allowlist
@@ -48,20 +55,18 @@ app.use('*', async (c, next) => {
       'http://localhost:5000',
       'http://localhost:5173',
     ],
-    environment: c.env.ENVIRONMENT,
   });
-  return corsMiddleware(c, next);
+  return corsMiddleware(c as any, next);
 });
 
 // ─── Global Rate Limiting on Auth Endpoints ───────────────────────────────────
 app.use('/api/*/auth/*', async (c, next) => {
   const rateLimitMiddleware = rateLimit({
-    kvNamespace: c.env.RATE_LIMIT_KV,
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 20,
+    limit: 20,
+    windowSeconds: 15 * 60, // 15 minutes
     keyPrefix: 'prod:auth',
   });
-  return rateLimitMiddleware(c, next);
+  return rateLimitMiddleware(c as any, next);
 });
 
 // ─── Global JWT Auth Middleware ───────────────────────────────────────────────
@@ -69,13 +74,11 @@ app.use('/api/*/auth/*', async (c, next) => {
 // Blueprint Reference: Part 6.1 — Multi-Tenant Security Model
 app.use('/api/*', async (c, next) => {
   const authMiddleware = jwtAuthMiddleware({
-    secret: c.env.JWT_SECRET,
-    kvNamespace: c.env.SESSIONS_KV,
     publicRoutes: [
-      '/api/production/public',
+      { path: '/api/production/public' },
     ],
   });
-  return authMiddleware(c, next);
+  return authMiddleware(c as any, next);
 });
 
 // ─── Health Check (public — no auth required) ─────────────────────────────────
