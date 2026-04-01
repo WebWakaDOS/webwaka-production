@@ -3,12 +3,21 @@
   "version": "1.0.0",
   "type": "module",
   "main": "src/worker.ts",
-  "description": "WebWaka Production Suite — Manufacturing, Production Management, Supply Chain [Invariants: Build Once, Mobile First, PWA First, Offline First, Nigeria First, Africa First, Vendor Neutral AI]",
+  "description": "WebWaka Production Suite \u2014 Manufacturing, Production Management, Supply Chain [Invariants: Build Once, Mobile First, PWA First, Offline First, Nigeria First, Africa First, Vendor Neutral AI]",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/WebWakaDOS/webwaka-production.git"
   },
-  "keywords": ["webwaka", "cloudflare-workers", "hono", "d1", "dexie", "pwa", "offline-first", "nigeria"],
+  "keywords": [
+    "webwaka",
+    "cloudflare-workers",
+    "hono",
+    "d1",
+    "dexie",
+    "pwa",
+    "offline-first",
+    "nigeria"
+  ],
   "author": "WebWakaDOS",
   "license": "ISC",
   "bugs": {
@@ -33,7 +42,8 @@
     "dexie": "^4.3.0",
     "hono": "^4.12.8",
     "react": "^19.2.4",
-    "react-dom": "^19.2.4"
+    "react-dom": "^19.2.4",
+    "@webwaka/core": "github:WebWakaDOS/webwaka-core#main"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20260313.1",
