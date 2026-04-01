@@ -14,16 +14,16 @@ ENVIRONMENT = "development"
 
 [[kv_namespaces]]
 binding = "SESSIONS_KV"
-id = "PLACEHOLDER_SESSIONS_KV_DEV_ID"
+id = "d4edbca6cb414f76becb4ee01acf12ba"
 
 [[kv_namespaces]]
 binding = "RATE_LIMIT_KV"
-id = "PLACEHOLDER_RATE_LIMIT_KV_DEV_ID"
+id = "a6155e7a95564dd0af7d99211bce618e"
 
 [[d1_databases]]
 binding = "DB"
 database_name = "webwaka-production-db-dev"
-database_id = "PLACEHOLDER_D1_DEV_ID"
+database_id = "NEEDS_D1_UPGRADE"
 
 # ─── Staging Environment ──────────────────────────────────────────────────────
 [env.staging]
@@ -34,16 +34,16 @@ ENVIRONMENT = "staging"
 
 [[env.staging.kv_namespaces]]
 binding = "SESSIONS_KV"
-id = "PLACEHOLDER_SESSIONS_KV_STAGING_ID"
+id = "fbd98b2d66b140fdbc68b98bddbcd349"
 
 [[env.staging.kv_namespaces]]
 binding = "RATE_LIMIT_KV"
-id = "PLACEHOLDER_RATE_LIMIT_KV_STAGING_ID"
+id = "599e5527254b4bdc9fd9844a2544a6be"
 
 [[env.staging.d1_databases]]
 binding = "DB"
 database_name = "webwaka-production-db-staging"
-database_id = "PLACEHOLDER_D1_STAGING_ID"
+database_id = "NEEDS_D1_UPGRADE"
 
 # ─── Production Environment ───────────────────────────────────────────────────
 [env.production]
@@ -54,16 +54,16 @@ ENVIRONMENT = "production"
 
 [[env.production.kv_namespaces]]
 binding = "SESSIONS_KV"
-id = "PLACEHOLDER_SESSIONS_KV_PROD_ID"
+id = "e6c85d62d29f4b05b93c105338ca06ec"
 
 [[env.production.kv_namespaces]]
 binding = "RATE_LIMIT_KV"
-id = "PLACEHOLDER_RATE_LIMIT_KV_PROD_ID"
+id = "e7996f52bc0046aa945c7aa22b15c890"
 
 [[env.production.d1_databases]]
 binding = "DB"
 database_name = "webwaka-production-db-prod"
-database_id = "PLACEHOLDER_D1_PROD_ID"
+database_id = "NEEDS_D1_UPGRADE"
 
 # NOTE: Replace all PLACEHOLDER_* values with real Cloudflare resource IDs
 # before deploying. JWT_SECRET must be set as a Cloudflare Workers Secret
