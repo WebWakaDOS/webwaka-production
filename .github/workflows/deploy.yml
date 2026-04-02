@@ -108,6 +108,8 @@ jobs:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     environment: production
+    permissions:
+      contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -145,6 +147,7 @@ jobs:
           echo "✅ Production health check passed"
 
       - name: Create GitHub Release
+        continue-on-error: true
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ github.run_number }}
