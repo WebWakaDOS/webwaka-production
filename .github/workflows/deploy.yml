@@ -94,7 +94,7 @@ jobs:
       - name: Staging health check
         run: |
           sleep 10
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://webwaka-production-api-staging.workers.dev/health)
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://webwaka-production-api-staging.webwaka.workers.dev/health)
           if [ "$STATUS" != "200" ]; then
             echo "ERROR: Staging health check failed with status $STATUS"
             exit 1
@@ -137,7 +137,7 @@ jobs:
       - name: Production health check
         run: |
           sleep 15
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://webwaka-production-api-prod.workers.dev/health)
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://webwaka-production-api-prod.webwaka.workers.dev/health)
           if [ "$STATUS" != "200" ]; then
             echo "ERROR: Production health check failed with status $STATUS"
             exit 1
