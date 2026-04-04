@@ -6,3 +6,6 @@ dist/
 .env.staging
 .env.production
 coverage/
+
+# Local secrets — never commit
+.dev.vars
