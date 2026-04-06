@@ -7,10 +7,10 @@
 -- EVERY table has tenant_id as the FIRST column after id.
 
 -- ─── Production Tasks (Floor Supervision — PROD-004) ─────────────────────────
-CREATE TABLE IF NOT EXISTS production_tasks (
+CREATE TABLE IF NOT EXISTS mfgp_production_tasks (
   id                   TEXT PRIMARY KEY NOT NULL,
   tenant_id            TEXT NOT NULL,
-  production_order_id  TEXT NOT NULL REFERENCES production_orders(id) ON DELETE CASCADE,
+  production_order_id  TEXT NOT NULL REFERENCES mfgp_production_orders(id) ON DELETE CASCADE,
   task_name            TEXT NOT NULL,
   station_id           TEXT,
   assigned_to          TEXT,                    -- user_id from JWT sub claim
@@ -25,18 +25,18 @@ CREATE TABLE IF NOT EXISTS production_tasks (
 );
 
 CREATE INDEX IF NOT EXISTS idx_production_tasks_tenant_order
-  ON production_tasks (tenant_id, production_order_id);
+  ON mfgp_production_tasks (tenant_id, production_order_id);
 
 CREATE INDEX IF NOT EXISTS idx_production_tasks_status
-  ON production_tasks (tenant_id, status);
+  ON mfgp_production_tasks (tenant_id, status);
 
 CREATE INDEX IF NOT EXISTS idx_production_tasks_assigned
-  ON production_tasks (tenant_id, assigned_to);
+  ON mfgp_production_tasks (tenant_id, assigned_to);
 
 -- ─── Archived Production Orders (Data Retention — PROD-006) ──────────────────
 -- Archived orders are moved here when older than the retention window.
 -- They remain queryable for audit purposes.
-CREATE TABLE IF NOT EXISTS archived_production_orders (
+CREATE TABLE IF NOT EXISTS mfgp_archived_production_orders (
   id                   TEXT PRIMARY KEY NOT NULL,
   tenant_id            TEXT NOT NULL,
   order_number         TEXT NOT NULL,
@@ -56,11 +56,11 @@ CREATE TABLE IF NOT EXISTS archived_production_orders (
 );
 
 CREATE INDEX IF NOT EXISTS idx_archived_orders_tenant
-  ON archived_production_orders (tenant_id, archived_at DESC);
+  ON mfgp_archived_production_orders (tenant_id, archived_at DESC);
 
 -- ─── Commerce Webhook Event Log (PROD-005) ────────────────────────────────────
 -- Stores incoming B2B sales order events from webwaka-commerce for idempotency.
-CREATE TABLE IF NOT EXISTS commerce_webhook_events (
+CREATE TABLE IF NOT EXISTS mfgp_commerce_webhook_events (
   id                   TEXT PRIMARY KEY NOT NULL,  -- event_id from webwaka-commerce
   tenant_id            TEXT NOT NULL,
   event_type           TEXT NOT NULL,              -- e.g., 'B2BSalesOrderPlaced'
@@ -73,7 +73,7 @@ CREATE TABLE IF NOT EXISTS commerce_webhook_events (
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS idx_commerce_events_id
-  ON commerce_webhook_events (id);
+  ON mfgp_commerce_webhook_events (id);
 
 CREATE INDEX IF NOT EXISTS idx_commerce_events_tenant
-  ON commerce_webhook_events (tenant_id, processed, received_at DESC);
+  ON mfgp_commerce_webhook_events (tenant_id, processed, received_at DESC);

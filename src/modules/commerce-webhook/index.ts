@@ -5,7 +5,7 @@
  * Invariant 1: Build Once Use Infinitely — auth from @webwaka/core
  *
  * Handles incoming webhook events from webwaka-commerce for B2B sales orders
- * that require manufacturing. Events are stored in the commerce_webhook_events
+ * that require manufacturing. Events are stored in the mfgp_commerce_webhook_events
  * table for idempotency and processed to create production orders automatically.
  *
  * Security:
@@ -14,7 +14,7 @@
  * - tenantId is extracted from the event payload and validated
  *
  * Error Handling:
- * - Failed processing stores the error in commerce_webhook_events (processed=2)
+ * - Failed processing stores the error in mfgp_commerce_webhook_events (processed=2)
  * - DLQ semantics: failed events remain queryable for retry
  */
 
@@ -91,7 +91,7 @@ commerceWebhookRouter.post('/commerce', async (c) => {
 
   // Idempotency check — if we've already processed this event, return 200
   const existing = await c.env.DB.prepare(
-    'SELECT id, processed, production_order_id FROM commerce_webhook_events WHERE id = ?'
+    'SELECT id, processed, production_order_id FROM mfgp_commerce_webhook_events WHERE id = ?'
   ).bind(event.eventId).first<{ id: string; processed: number; production_order_id: string | null }>();
 
   if (existing) {
@@ -104,7 +104,7 @@ commerceWebhookRouter.post('/commerce', async (c) => {
 
   // Store the raw event for audit trail
   await c.env.DB.prepare(
-    `INSERT INTO commerce_webhook_events
+    `INSERT INTO mfgp_commerce_webhook_events
      (id, tenant_id, event_type, payload, processed, received_at)
      VALUES (?, ?, ?, ?, 0, ?)`
   ).bind(event.eventId, event.tenantId, event.eventType, rawBody, now).run();
@@ -121,7 +121,7 @@ commerceWebhookRouter.post('/commerce', async (c) => {
     const orderNumber = `PO-B2B-${Date.now()}`;
 
     await c.env.DB.prepare(
-      `INSERT INTO production_orders
+      `INSERT INTO mfgp_production_orders
        (id, tenant_id, order_number, product_name, quantity, unit, status,
         scheduled_start_date, scheduled_end_date, notes, created_by, created_at, updated_at)
        VALUES (?, ?, ?, ?, ?, ?, 'DRAFT', ?, ?, ?, 'commerce-webhook', ?, ?)`
@@ -141,7 +141,7 @@ commerceWebhookRouter.post('/commerce', async (c) => {
 
     // Mark event as processed
     await c.env.DB.prepare(
-      'UPDATE commerce_webhook_events SET processed = 1, production_order_id = ?, processed_at = ? WHERE id = ?'
+      'UPDATE mfgp_commerce_webhook_events SET processed = 1, production_order_id = ?, processed_at = ? WHERE id = ?'
     ).bind(productionOrderId, now, event.eventId).run();
 
     return c.json({
@@ -158,7 +158,7 @@ commerceWebhookRouter.post('/commerce', async (c) => {
 
     // Mark event as failed (DLQ semantics — processed=2)
     await c.env.DB.prepare(
-      'UPDATE commerce_webhook_events SET processed = 2, error_message = ?, processed_at = ? WHERE id = ?'
+      'UPDATE mfgp_commerce_webhook_events SET processed = 2, error_message = ?, processed_at = ? WHERE id = ?'
     ).bind(errorMessage, now, event.eventId).run();
 
     console.error('[commerce-webhook] Failed to process B2BSalesOrderPlaced:', errorMessage);
@@ -179,7 +179,7 @@ commerceWebhookRouter.get(
     const tenantId = c.get('tenantId');
     const processed = c.req.query('processed'); // 0=pending, 1=ok, 2=failed
 
-    let query = 'SELECT id, tenant_id, event_type, processed, production_order_id, error_message, received_at, processed_at FROM commerce_webhook_events WHERE tenant_id = ?';
+    let query = 'SELECT id, tenant_id, event_type, processed, production_order_id, error_message, received_at, processed_at FROM mfgp_commerce_webhook_events WHERE tenant_id = ?';
     const values: (string | number)[] = [tenantId];
 
     if (processed !== undefined) {
@@ -207,7 +207,7 @@ commerceWebhookRouter.post(
     const { id } = c.req.param();
 
     const event = await c.env.DB.prepare(
-      'SELECT * FROM commerce_webhook_events WHERE id = ? AND tenant_id = ?'
+      'SELECT * FROM mfgp_commerce_webhook_events WHERE id = ? AND tenant_id = ?'
     ).bind(id, tenantId).first<{
       id: string;
       tenant_id: string;
@@ -225,7 +225,7 @@ commerceWebhookRouter.post(
 
     // Reset to pending for reprocessing
     await c.env.DB.prepare(
-      'UPDATE commerce_webhook_events SET processed = 0, error_message = NULL, processed_at = NULL WHERE id = ?'
+      'UPDATE mfgp_commerce_webhook_events SET processed = 0, error_message = NULL, processed_at = NULL WHERE id = ?'
     ).bind(id).run();
 
     return c.json({ success: true, message: 'Event reset to pending — will be reprocessed on next sync' });

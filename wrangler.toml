@@ -42,8 +42,9 @@ id = "599e5527254b4bdc9fd9844a2544a6be"
 
 [[env.staging.d1_databases]]
 binding = "DB"
-database_name = "modules_prod"
-database_id = "ee93377c-8000-45d6-ae54-f0d4c588bf04"
+database_name = "webwaka-staging-db"
+database_id = "d7278ca0-2408-40d5-a08b-d8456601f667"
+migrations_dir = "migrations"
 
 # ─── Production Environment ───────────────────────────────────────────────────
 [env.production]
@@ -62,8 +63,9 @@ id = "e7996f52bc0046aa945c7aa22b15c890"
 
 [[env.production.d1_databases]]
 binding = "DB"
-database_name = "modules_prod"
-database_id = "ee93377c-8000-45d6-ae54-f0d4c588bf04"
+database_name = "webwaka-production-db"
+database_id = "d01940d3-d69e-4455-94ba-bc2404cb3872"
+migrations_dir = "migrations"
 
 # NOTE: JWT_SECRET must be set as a Cloudflare Workers Secret (not in wrangler.toml)
 # using: wrangler secret put JWT_SECRET

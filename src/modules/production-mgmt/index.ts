@@ -70,13 +70,13 @@ productionMgmtRouter.get(
     let countBindings: (string | number)[];
 
     if (statusFilter) {
-      query = 'SELECT * FROM production_orders WHERE tenant_id = ? AND status = ? ORDER BY created_at DESC LIMIT ? OFFSET ?';
-      countQuery = 'SELECT COUNT(*) as total FROM production_orders WHERE tenant_id = ? AND status = ?';
+      query = 'SELECT * FROM mfgp_production_orders WHERE tenant_id = ? AND status = ? ORDER BY created_at DESC LIMIT ? OFFSET ?';
+      countQuery = 'SELECT COUNT(*) as total FROM mfgp_production_orders WHERE tenant_id = ? AND status = ?';
       bindings = [tenantId, statusFilter, pageSize, offset];
       countBindings = [tenantId, statusFilter];
     } else {
-      query = 'SELECT * FROM production_orders WHERE tenant_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?';
-      countQuery = 'SELECT COUNT(*) as total FROM production_orders WHERE tenant_id = ?';
+      query = 'SELECT * FROM mfgp_production_orders WHERE tenant_id = ? ORDER BY created_at DESC LIMIT ? OFFSET ?';
+      countQuery = 'SELECT COUNT(*) as total FROM mfgp_production_orders WHERE tenant_id = ?';
       bindings = [tenantId, pageSize, offset];
       countBindings = [tenantId];
     }
@@ -114,7 +114,7 @@ productionMgmtRouter.get(
     const { id } = c.req.param();
 
     const order = await c.env.DB.prepare(
-      'SELECT * FROM production_orders WHERE id = ? AND tenant_id = ?'
+      'SELECT * FROM mfgp_production_orders WHERE id = ? AND tenant_id = ?'
     ).bind(id, tenantId).first();
 
     if (!order) {
@@ -157,7 +157,7 @@ productionMgmtRouter.post(
     const now = new Date().toISOString();
 
     await c.env.DB.prepare(
-      `INSERT INTO production_orders
+      `INSERT INTO mfgp_production_orders
        (id, tenant_id, order_number, product_name, quantity, unit, status,
         scheduled_start_date, scheduled_end_date, notes, created_by, created_at, updated_at)
        VALUES (?, ?, ?, ?, ?, ?, 'DRAFT', ?, ?, ?, ?, ?, ?)`
@@ -214,7 +214,7 @@ productionMgmtRouter.patch(
     }>();
 
     const existing = await c.env.DB.prepare(
-      'SELECT * FROM production_orders WHERE id = ? AND tenant_id = ?'
+      'SELECT * FROM mfgp_production_orders WHERE id = ? AND tenant_id = ?'
     ).bind(id, tenantId).first<{ status: string }>();
 
     if (!existing) {
@@ -250,11 +250,11 @@ productionMgmtRouter.patch(
     values.push(id, tenantId);
 
     await c.env.DB.prepare(
-      `UPDATE production_orders SET ${updates.join(', ')} WHERE id = ? AND tenant_id = ?`
+      `UPDATE mfgp_production_orders SET ${updates.join(', ')} WHERE id = ? AND tenant_id = ?`
     ).bind(...values).run();
 
     const updated = await c.env.DB.prepare(
-      'SELECT * FROM production_orders WHERE id = ? AND tenant_id = ?'
+      'SELECT * FROM mfgp_production_orders WHERE id = ? AND tenant_id = ?'
     ).bind(id, tenantId).first();
 
     return c.json({ success: true, data: updated });
@@ -275,7 +275,7 @@ productionMgmtRouter.delete(
     const { id } = c.req.param();
 
     const existing = await c.env.DB.prepare(
-      'SELECT status FROM production_orders WHERE id = ? AND tenant_id = ?'
+      'SELECT status FROM mfgp_production_orders WHERE id = ? AND tenant_id = ?'
     ).bind(id, tenantId).first<{ status: string }>();
 
     if (!existing) {
@@ -289,7 +289,7 @@ productionMgmtRouter.delete(
     }
 
     await c.env.DB.prepare(
-      'DELETE FROM production_orders WHERE id = ? AND tenant_id = ?'
+      'DELETE FROM mfgp_production_orders WHERE id = ? AND tenant_id = ?'
     ).bind(id, tenantId).run();
 
     return c.json({ success: true, message: 'Production order deleted' });
@@ -312,7 +312,7 @@ productionMgmtRouter.get(
 
     // Verify the order belongs to the tenant
     const order = await c.env.DB.prepare(
-      'SELECT id FROM production_orders WHERE id = ? AND tenant_id = ?'
+      'SELECT id FROM mfgp_production_orders WHERE id = ? AND tenant_id = ?'
     ).bind(orderId, tenantId).first();
 
     if (!order) {
@@ -320,7 +320,7 @@ productionMgmtRouter.get(
     }
 
     const { results } = await c.env.DB.prepare(
-      'SELECT * FROM bill_of_materials WHERE production_order_id = ? AND tenant_id = ? ORDER BY created_at ASC'
+      'SELECT * FROM mfgp_bill_of_materials WHERE production_order_id = ? AND tenant_id = ? ORDER BY created_at ASC'
     ).bind(orderId, tenantId).all();
 
     return c.json({ success: true, data: results });
@@ -354,7 +354,7 @@ productionMgmtRouter.post(
 
     // Verify the order belongs to the tenant
     const order = await c.env.DB.prepare(
-      'SELECT id FROM production_orders WHERE id = ? AND tenant_id = ?'
+      'SELECT id FROM mfgp_production_orders WHERE id = ? AND tenant_id = ?'
     ).bind(orderId, tenantId).first();
 
     if (!order) {
@@ -365,7 +365,7 @@ productionMgmtRouter.post(
     const now = new Date().toISOString();
 
     await c.env.DB.prepare(
-      `INSERT INTO bill_of_materials
+      `INSERT INTO mfgp_bill_of_materials
        (id, tenant_id, production_order_id, component_name, component_sku, quantity_required, unit, created_at)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
     ).bind(
@@ -404,7 +404,7 @@ productionMgmtRouter.patch(
     const body = await c.req.json<{ quantityUsed?: number }>();
 
     const item = await c.env.DB.prepare(
-      'SELECT id FROM bill_of_materials WHERE id = ? AND production_order_id = ? AND tenant_id = ?'
+      'SELECT id FROM mfgp_bill_of_materials WHERE id = ? AND production_order_id = ? AND tenant_id = ?'
     ).bind(id, orderId, tenantId).first();
 
     if (!item) {
@@ -412,11 +412,11 @@ productionMgmtRouter.patch(
     }
 
     await c.env.DB.prepare(
-      'UPDATE bill_of_materials SET quantity_used = ? WHERE id = ? AND tenant_id = ?'
+      'UPDATE mfgp_bill_of_materials SET quantity_used = ? WHERE id = ? AND tenant_id = ?'
     ).bind(body.quantityUsed ?? null, id, tenantId).run();
 
     const updated = await c.env.DB.prepare(
-      'SELECT * FROM bill_of_materials WHERE id = ?'
+      'SELECT * FROM mfgp_bill_of_materials WHERE id = ?'
     ).bind(id).first();
 
     return c.json({ success: true, data: updated });
@@ -438,7 +438,7 @@ productionMgmtRouter.get(
     const { orderId } = c.req.param();
 
     const order = await c.env.DB.prepare(
-      'SELECT id FROM production_orders WHERE id = ? AND tenant_id = ?'
+      'SELECT id FROM mfgp_production_orders WHERE id = ? AND tenant_id = ?'
     ).bind(orderId, tenantId).first();
 
     if (!order) {
@@ -446,7 +446,7 @@ productionMgmtRouter.get(
     }
 
     const { results } = await c.env.DB.prepare(
-      'SELECT * FROM quality_checks WHERE production_order_id = ? AND tenant_id = ? ORDER BY created_at DESC'
+      'SELECT * FROM mfgp_quality_checks WHERE production_order_id = ? AND tenant_id = ? ORDER BY created_at DESC'
     ).bind(orderId, tenantId).all();
 
     return c.json({ success: true, data: results });
@@ -486,7 +486,7 @@ productionMgmtRouter.post(
 
     // Verify the order belongs to the tenant
     const order = await c.env.DB.prepare(
-      'SELECT id FROM production_orders WHERE id = ? AND tenant_id = ?'
+      'SELECT id FROM mfgp_production_orders WHERE id = ? AND tenant_id = ?'
     ).bind(orderId, tenantId).first();
 
     if (!order) {
@@ -497,7 +497,7 @@ productionMgmtRouter.post(
     const now = new Date().toISOString();
 
     await c.env.DB.prepare(
-      `INSERT INTO quality_checks
+      `INSERT INTO mfgp_quality_checks
        (id, tenant_id, production_order_id, check_type, result, checked_by, notes, checked_at, created_at)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
     ).bind(
@@ -537,7 +537,7 @@ productionMgmtRouter.get(
     const { orderId } = c.req.param();
 
     const order = await c.env.DB.prepare(
-      'SELECT id FROM production_orders WHERE id = ? AND tenant_id = ?'
+      'SELECT id FROM mfgp_production_orders WHERE id = ? AND tenant_id = ?'
     ).bind(orderId, tenantId).first();
 
     if (!order) {
@@ -545,7 +545,7 @@ productionMgmtRouter.get(
     }
 
     const { results } = await c.env.DB.prepare(
-      'SELECT * FROM production_tasks WHERE production_order_id = ? AND tenant_id = ? ORDER BY created_at ASC'
+      'SELECT * FROM mfgp_production_tasks WHERE production_order_id = ? AND tenant_id = ? ORDER BY created_at ASC'
     ).bind(orderId, tenantId).all();
 
     return c.json({ success: true, data: results });
@@ -576,7 +576,7 @@ productionMgmtRouter.post(
     }
 
     const order = await c.env.DB.prepare(
-      'SELECT id FROM production_orders WHERE id = ? AND tenant_id = ?'
+      'SELECT id FROM mfgp_production_orders WHERE id = ? AND tenant_id = ?'
     ).bind(orderId, tenantId).first();
 
     if (!order) {
@@ -587,7 +587,7 @@ productionMgmtRouter.post(
     const now = new Date().toISOString();
 
     await c.env.DB.prepare(
-      `INSERT INTO production_tasks
+      `INSERT INTO mfgp_production_tasks
        (id, tenant_id, production_order_id, task_name, station_id, assigned_to, status, notes, created_by, created_at, updated_at)
        VALUES (?, ?, ?, ?, ?, ?, 'PENDING', ?, ?, ?, ?)`
     ).bind(
@@ -635,7 +635,7 @@ productionMgmtRouter.patch(
     }>();
 
     const task = await c.env.DB.prepare(
-      'SELECT * FROM production_tasks WHERE id = ? AND production_order_id = ? AND tenant_id = ?'
+      'SELECT * FROM mfgp_production_tasks WHERE id = ? AND production_order_id = ? AND tenant_id = ?'
     ).bind(id, orderId, tenantId).first<{ status: string; start_time: string | null }>();
 
     if (!task) {
@@ -667,11 +667,11 @@ productionMgmtRouter.patch(
     values.push(id, tenantId);
 
     await c.env.DB.prepare(
-      `UPDATE production_tasks SET ${updates.join(', ')} WHERE id = ? AND tenant_id = ?`
+      `UPDATE mfgp_production_tasks SET ${updates.join(', ')} WHERE id = ? AND tenant_id = ?`
     ).bind(...values).run();
 
     const updated = await c.env.DB.prepare(
-      'SELECT * FROM production_tasks WHERE id = ?'
+      'SELECT * FROM mfgp_production_tasks WHERE id = ?'
     ).bind(id).first();
 
     return c.json({ success: true, data: updated });
@@ -691,7 +691,7 @@ productionMgmtRouter.get(
     const statusFilter = c.req.query('status');
     const assignedTo = c.req.query('assignedTo');
 
-    let query = 'SELECT t.*, o.order_number, o.product_name FROM production_tasks t JOIN production_orders o ON t.production_order_id = o.id WHERE t.tenant_id = ?';
+    let query = 'SELECT t.*, o.order_number, o.product_name FROM mfgp_production_tasks t JOIN mfgp_production_orders o ON t.production_order_id = o.id WHERE t.tenant_id = ?';
     const values: (string | number)[] = [tenantId];
 
     if (statusFilter) { query += ' AND t.status = ?'; values.push(statusFilter); }

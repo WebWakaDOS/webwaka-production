@@ -58,7 +58,7 @@ dataRetentionRouter.post(
 
     // Find eligible orders: completed or cancelled, older than retention window
     const { results: eligibleOrders } = await c.env.DB.prepare(
-      `SELECT * FROM production_orders
+      `SELECT * FROM mfgp_production_orders
        WHERE tenant_id = ?
          AND status IN ('COMPLETED', 'CANCELLED')
          AND updated_at < ?
@@ -97,7 +97,7 @@ dataRetentionRouter.post(
       try {
         // Insert into archive table
         await c.env.DB.prepare(
-          `INSERT OR IGNORE INTO archived_production_orders
+          `INSERT OR IGNORE INTO mfgp_archived_production_orders
            (id, tenant_id, order_number, product_name, quantity, unit, status,
             scheduled_start_date, scheduled_end_date, actual_start_date, actual_end_date,
             notes, created_by, created_at, updated_at, archived_at)
@@ -112,7 +112,7 @@ dataRetentionRouter.post(
 
         // Remove from active table (CASCADE deletes associated BOM/QC/tasks)
         await c.env.DB.prepare(
-          'DELETE FROM production_orders WHERE id = ? AND tenant_id = ?'
+          'DELETE FROM mfgp_production_orders WHERE id = ? AND tenant_id = ?'
         ).bind(order.id, order.tenant_id).run();
 
         archivedCount++;
@@ -151,10 +151,10 @@ dataRetentionRouter.get(
 
     const [{ results }, countResult] = await Promise.all([
       c.env.DB.prepare(
-        'SELECT * FROM archived_production_orders WHERE tenant_id = ? ORDER BY archived_at DESC LIMIT ? OFFSET ?'
+        'SELECT * FROM mfgp_archived_production_orders WHERE tenant_id = ? ORDER BY archived_at DESC LIMIT ? OFFSET ?'
       ).bind(tenantId, pageSize, offset).all(),
       c.env.DB.prepare(
-        'SELECT COUNT(*) as total FROM archived_production_orders WHERE tenant_id = ?'
+        'SELECT COUNT(*) as total FROM mfgp_archived_production_orders WHERE tenant_id = ?'
       ).bind(tenantId).first<{ total: number }>(),
     ]);
 
@@ -186,7 +186,7 @@ dataRetentionRouter.get(
     const { id } = c.req.param();
 
     const order = await c.env.DB.prepare(
-      'SELECT * FROM archived_production_orders WHERE id = ? AND tenant_id = ?'
+      'SELECT * FROM mfgp_archived_production_orders WHERE id = ? AND tenant_id = ?'
     ).bind(id, tenantId).first();
 
     if (!order) {
@@ -214,13 +214,13 @@ dataRetentionRouter.get(
 
     const [activeResult, archivedResult, eligibleResult] = await Promise.all([
       c.env.DB.prepare(
-        'SELECT COUNT(*) as total FROM production_orders WHERE tenant_id = ?'
+        'SELECT COUNT(*) as total FROM mfgp_production_orders WHERE tenant_id = ?'
       ).bind(tenantId).first<{ total: number }>(),
       c.env.DB.prepare(
-        'SELECT COUNT(*) as total FROM archived_production_orders WHERE tenant_id = ?'
+        'SELECT COUNT(*) as total FROM mfgp_archived_production_orders WHERE tenant_id = ?'
       ).bind(tenantId).first<{ total: number }>(),
       c.env.DB.prepare(
-        `SELECT COUNT(*) as total FROM production_orders
+        `SELECT COUNT(*) as total FROM mfgp_production_orders
          WHERE tenant_id = ? AND status IN ('COMPLETED', 'CANCELLED') AND updated_at < ?`
       ).bind(tenantId, cutoffISO).first<{ total: number }>(),
     ]);

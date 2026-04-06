@@ -98,16 +98,16 @@ externalApiRouter.get('/orders', async (c) => {
   const values: (string | number)[] = [tenantId];
 
   if (status && cursor) {
-    query = 'SELECT * FROM production_orders WHERE tenant_id = ? AND status = ? AND created_at < ? ORDER BY created_at DESC LIMIT ?';
+    query = 'SELECT * FROM mfgp_production_orders WHERE tenant_id = ? AND status = ? AND created_at < ? ORDER BY created_at DESC LIMIT ?';
     values.push(status, cursor, limit);
   } else if (status) {
-    query = 'SELECT * FROM production_orders WHERE tenant_id = ? AND status = ? ORDER BY created_at DESC LIMIT ?';
+    query = 'SELECT * FROM mfgp_production_orders WHERE tenant_id = ? AND status = ? ORDER BY created_at DESC LIMIT ?';
     values.push(status, limit);
   } else if (cursor) {
-    query = 'SELECT * FROM production_orders WHERE tenant_id = ? AND created_at < ? ORDER BY created_at DESC LIMIT ?';
+    query = 'SELECT * FROM mfgp_production_orders WHERE tenant_id = ? AND created_at < ? ORDER BY created_at DESC LIMIT ?';
     values.push(cursor, limit);
   } else {
-    query = 'SELECT * FROM production_orders WHERE tenant_id = ? ORDER BY created_at DESC LIMIT ?';
+    query = 'SELECT * FROM mfgp_production_orders WHERE tenant_id = ? ORDER BY created_at DESC LIMIT ?';
     values.push(limit);
   }
 
@@ -141,16 +141,16 @@ externalApiRouter.get('/orders/:id', async (c) => {
 
   const [order, bomResult, qcResult, tasksResult] = await Promise.all([
     c.env.DB.prepare(
-      'SELECT * FROM production_orders WHERE id = ? AND tenant_id = ?'
+      'SELECT * FROM mfgp_production_orders WHERE id = ? AND tenant_id = ?'
     ).bind(id, tenantId).first(),
     c.env.DB.prepare(
-      'SELECT * FROM bill_of_materials WHERE production_order_id = ? AND tenant_id = ? ORDER BY created_at ASC'
+      'SELECT * FROM mfgp_bill_of_materials WHERE production_order_id = ? AND tenant_id = ? ORDER BY created_at ASC'
     ).bind(id, tenantId).all(),
     c.env.DB.prepare(
-      'SELECT * FROM quality_checks WHERE production_order_id = ? AND tenant_id = ? ORDER BY created_at DESC'
+      'SELECT * FROM mfgp_quality_checks WHERE production_order_id = ? AND tenant_id = ? ORDER BY created_at DESC'
     ).bind(id, tenantId).all(),
     c.env.DB.prepare(
-      'SELECT * FROM production_tasks WHERE production_order_id = ? AND tenant_id = ? ORDER BY created_at ASC'
+      'SELECT * FROM mfgp_production_tasks WHERE production_order_id = ? AND tenant_id = ? ORDER BY created_at ASC'
     ).bind(id, tenantId).all(),
   ]);
 
@@ -200,7 +200,7 @@ externalApiRouter.post('/orders', async (c) => {
     : (body.notes ?? null);
 
   await c.env.DB.prepare(
-    `INSERT INTO production_orders
+    `INSERT INTO mfgp_production_orders
      (id, tenant_id, order_number, product_name, quantity, unit, status,
       scheduled_start_date, scheduled_end_date, notes, created_by, created_at, updated_at)
      VALUES (?, ?, ?, ?, ?, ?, 'DRAFT', ?, ?, ?, 'external-api', ?, ?)`
@@ -240,7 +240,7 @@ externalApiRouter.put('/orders/:id/status', async (c) => {
   }
 
   const existing = await c.env.DB.prepare(
-    'SELECT status FROM production_orders WHERE id = ? AND tenant_id = ?'
+    'SELECT status FROM mfgp_production_orders WHERE id = ? AND tenant_id = ?'
   ).bind(id, tenantId).first<{ status: string }>();
 
   if (!existing) {
@@ -266,7 +266,7 @@ externalApiRouter.put('/orders/:id/status', async (c) => {
 
   const now = new Date().toISOString();
   await c.env.DB.prepare(
-    'UPDATE production_orders SET status = ?, updated_at = ? WHERE id = ? AND tenant_id = ?'
+    'UPDATE mfgp_production_orders SET status = ?, updated_at = ? WHERE id = ? AND tenant_id = ?'
   ).bind(body.status, now, id, tenantId).run();
 
   return c.json({
