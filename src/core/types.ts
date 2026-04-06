@@ -73,6 +73,24 @@ export interface QualityCheck {
   createdAt: string;
 }
 
+export type ProductionTaskStatus = 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'BLOCKED';
+
+export interface ProductionTask {
+  id: string;
+  tenantId: string;
+  productionOrderId: string;
+  taskName: string;
+  stationId: string | null;
+  assignedTo: string | null;
+  status: ProductionTaskStatus;
+  startTime: string | null;
+  endTime: string | null;
+  notes: string | null;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 // ─── Constants ────────────────────────────────────────────────────────────────
 export const PRODUCTION_CONSTANTS = {
   DEFAULT_PAGE_SIZE: 20,

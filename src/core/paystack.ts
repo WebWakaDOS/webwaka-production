@@ -1,13 +1,10 @@
 /**
- * WebWaka Production Suite — Paystack Integration Stub
+ * WebWaka Production Suite — Paystack Integration
  * Blueprint Reference: Part 5.4 — Payment Processing
  *
  * Invariant 5: Nigeria First
  * Paystack is the primary payment gateway for the Nigerian market.
  * ALL monetary values are in kobo (integer). NEVER use floats for money.
- *
- * This stub provides the interface contract that the Replit Agent must implement.
- * The full implementation connects to the Paystack API via fetch().
  */
 
 // ─── Paystack Types ───────────────────────────────────────────────────────────
@@ -46,6 +43,34 @@ export interface PaystackVerifyResponse {
   };
 }
 
+// Raw Paystack API shapes (snake_case from their API)
+interface PaystackRawInitResponse {
+  status: boolean;
+  message: string;
+  data: {
+    authorization_url: string;
+    access_code: string;
+    reference: string;
+  };
+}
+
+interface PaystackRawVerifyResponse {
+  status: boolean;
+  message: string;
+  data: {
+    status: 'success' | 'failed' | 'abandoned';
+    reference: string;
+    amount: number; // kobo from Paystack
+    currency: 'NGN';
+    paid_at: string;
+    customer: {
+      email: string;
+      first_name: string | null;
+      last_name: string | null;
+    };
+  };
+}
+
 // ─── Paystack Client ──────────────────────────────────────────────────────────
 export class PaystackClient {
   private readonly secretKey: string;
@@ -53,6 +78,13 @@ export class PaystackClient {
 
   constructor(secretKey: string) {
     this.secretKey = secretKey;
+  }
+
+  private get headers(): Record<string, string> {
+    return {
+      Authorization: `Bearer ${this.secretKey}`,
+      'Content-Type': 'application/json',
+    };
   }
 
   /**
@@ -63,12 +95,39 @@ export class PaystackClient {
   async initializePayment(
     request: PaystackInitializeRequest
   ): Promise<PaystackInitializeResponse> {
-    // TODO (Replit Agent): Implement full Paystack API call
-    // Reference: https://paystack.com/docs/api/transaction/#initialize
-    throw new Error(
-      'PaystackClient.initializePayment() — stub not yet implemented. ' +
-      'Replit Agent: implement this using fetch() to POST to https://api.paystack.co/transaction/initialize'
-    );
+    const body: Record<string, unknown> = {
+      email: request.email,
+      amount: request.amountKobo, // Paystack API expects amount in kobo
+      currency: 'NGN',
+    };
+    if (request.reference !== undefined) body['reference'] = request.reference;
+    if (request.callbackUrl !== undefined) body['callback_url'] = request.callbackUrl;
+    if (request.metadata !== undefined) body['metadata'] = request.metadata;
+    if (request.channels !== undefined) body['channels'] = request.channels;
+
+    const res = await fetch(`${this.baseUrl}/transaction/initialize`, {
+      method: 'POST',
+      headers: this.headers,
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(15000),
+    });
+
+    if (!res.ok) {
+      const errorText = await res.text();
+      throw new Error(`Paystack initialize failed (${res.status}): ${errorText}`);
+    }
+
+    const raw = await res.json() as PaystackRawInitResponse;
+
+    return {
+      status: raw.status,
+      message: raw.message,
+      data: {
+        authorizationUrl: raw.data.authorization_url,
+        accessCode: raw.data.access_code,
+        reference: raw.data.reference,
+      },
+    };
   }
 
   /**
@@ -77,12 +136,37 @@ export class PaystackClient {
    * Blueprint Reference: Part 5.4.2 — Payment Verification
    */
   async verifyPayment(reference: string): Promise<PaystackVerifyResponse> {
-    // TODO (Replit Agent): Implement full Paystack API call
-    // Reference: https://paystack.com/docs/api/transaction/#verify
-    throw new Error(
-      'PaystackClient.verifyPayment() — stub not yet implemented. ' +
-      'Replit Agent: implement this using fetch() to GET https://api.paystack.co/transaction/verify/:reference'
-    );
+    const encodedRef = encodeURIComponent(reference);
+    const res = await fetch(`${this.baseUrl}/transaction/verify/${encodedRef}`, {
+      method: 'GET',
+      headers: this.headers,
+      signal: AbortSignal.timeout(15000),
+    });
+
+    if (!res.ok) {
+      const errorText = await res.text();
+      throw new Error(`Paystack verify failed (${res.status}): ${errorText}`);
+    }
+
+    const raw = await res.json() as PaystackRawVerifyResponse;
+    const customer = raw.data.customer;
+    const nameParts = [customer.first_name, customer.last_name].filter(Boolean);
+
+    return {
+      status: raw.status,
+      message: raw.message,
+      data: {
+        status: raw.data.status,
+        reference: raw.data.reference,
+        amountKobo: raw.data.amount, // Already in kobo
+        currency: raw.data.currency,
+        paidAt: raw.data.paid_at,
+        customer: {
+          email: customer.email,
+          name: nameParts.length > 0 ? nameParts.join(' ') : null,
+        },
+      },
+    };
   }
 }
 

@@ -10,6 +10,13 @@
  * - secureCORS: NO wildcard origin, environment-aware allowlist
  * - jwtAuthMiddleware: ALL /api/* routes protected, tenantId from JWT only
  * - rateLimit: Applied to all auth and mutation endpoints
+ *
+ * Route Prefixes:
+ * - /health               — public health check
+ * - /api/production/mgmt  — internal production management (JWT auth)
+ * - /api/production/webhooks — commerce webhooks (/commerce is public, rest is JWT)
+ * - /api/production/retention — data retention (JWT auth)
+ * - /ext/v1/production    — external ERP/MES API (API key auth, NOT JWT)
  */
 
 import { Hono } from 'hono';
@@ -21,6 +28,9 @@ import {
   type WakaUser,
 } from '@webwaka/core';
 import { productionMgmtRouter } from './modules/production-mgmt/index.js';
+import { commerceWebhookRouter } from './modules/commerce-webhook/index.js';
+import { dataRetentionRouter } from './modules/data-retention/index.js';
+import { externalApiRouter } from './modules/external-api/index.js';
 
 // ─── Cloudflare Workers Bindings Type ─────────────────────────────────────────
 export interface Bindings {
@@ -29,6 +39,9 @@ export interface Bindings {
   RATE_LIMIT_KV: KVNamespace;
   JWT_SECRET: string;
   ENVIRONMENT: 'development' | 'staging' | 'production';
+  INTER_SERVICE_SECRET?: string;
+  PAYSTACK_SECRET_KEY?: string;
+  OPENROUTER_API_KEY?: string;
 }
 
 // ─── Hono Context Variables ───────────────────────────────────────────────────
@@ -72,10 +85,15 @@ app.use('/api/*/auth/*', async (c, next) => {
 // ─── Global JWT Auth Middleware ───────────────────────────────────────────────
 // tenantId is ALWAYS sourced from the validated JWT payload — NEVER from headers
 // Blueprint Reference: Part 6.1 — Multi-Tenant Security Model
+//
+// Public routes:
+// - /api/production/public       — legacy public route
+// - /api/production/webhooks/commerce — inter-service webhook (uses X-Inter-Service-Secret)
 app.use('/api/*', async (c, next) => {
   const authMiddleware = jwtAuthMiddleware({
     publicRoutes: [
       { path: '/api/production/public' },
+      { path: '/api/production/webhooks/commerce' },
     ],
   });
   return authMiddleware(c as any, next);
@@ -93,9 +111,22 @@ app.get('/health', (c) => {
 });
 
 // ─── Module Routes ────────────────────────────────────────────────────────────
-// PROD-1: Production Management (orders, BOM, quality control)
-// Blueprint Reference: Part 10.x — Production Vertical
+
+// PROD-1/2/3/4: Production Management (orders, BOM, quality control, tasks)
 app.route('/api/production/mgmt', productionMgmtRouter);
+
+// PROD-5: Commerce Webhook — B2B sales order events from webwaka-commerce
+// POST /api/production/webhooks/commerce   — public (inter-service secret)
+// GET  /api/production/webhooks/events     — JWT protected (TENANT_ADMIN)
+// POST /api/production/webhooks/events/:id/retry — JWT protected (TENANT_ADMIN)
+app.route('/api/production/webhooks', commerceWebhookRouter);
+
+// PROD-6: Data Retention — archiving and audit of historical records
+app.route('/api/production/retention', dataRetentionRouter);
+
+// PROD-7: External ERP/MES API — API key authenticated, NOT under /api/* (no JWT middleware)
+// Routes: /ext/v1/production/orders, /ext/v1/production/orders/:id, etc.
+app.route('/ext/v1/production', externalApiRouter);
 
 // ─── 404 Handler ─────────────────────────────────────────────────────────────
 app.notFound((c) => {
