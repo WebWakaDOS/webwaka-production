@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WebWaka Production Suite</title>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: #0f172a;
+        color: #f1f5f9;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+      }
+      .logo {
+        font-size: 2.5rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 0.5rem;
+      }
+      .tagline {
+        font-size: 1rem;
+        color: #94a3b8;
+        margin-bottom: 3rem;
+        text-align: center;
+      }
+      .card {
+        background: #1e293b;
+        border: 1px solid #334155;
+        border-radius: 12px;
+        padding: 2rem;
+        max-width: 600px;
+        width: 100%;
+        margin-bottom: 1.5rem;
+      }
+      .card h2 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        color: #e2e8f0;
+      }
+      .module-list {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+      .module-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem 1rem;
+        background: #0f172a;
+        border-radius: 8px;
+        border: 1px solid #334155;
+      }
+      .badge {
+        font-size: 0.7rem;
+        padding: 0.2rem 0.5rem;
+        border-radius: 4px;
+        font-weight: 600;
+        text-transform: uppercase;
+      }
+      .badge-ready { background: #1d4ed8; color: #bfdbfe; }
+      .badge-planned { background: #374151; color: #9ca3af; }
+      .module-name { font-size: 0.9rem; color: #cbd5e1; flex: 1; }
+      .api-status {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.85rem;
+        color: #94a3b8;
+      }
+      .dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; display: inline-block; }
+      .invariants {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 0.75rem;
+      }
+      .invariant-chip {
+        padding: 0.5rem 0.75rem;
+        background: #0f172a;
+        border: 1px solid #334155;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        color: #94a3b8;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="logo">WebWaka Production Suite</div>
+    <div class="tagline">Manufacturing &amp; Production Management — Africa-First Vertical SaaS</div>
+
+    <div class="card">
+      <h2>Production Modules</h2>
+      <ul class="module-list">
+        <li class="module-item">
+          <span class="badge badge-ready">Ready</span>
+          <span class="module-name">Production Order Management</span>
+        </li>
+        <li class="module-item">
+          <span class="badge badge-ready">Ready</span>
+          <span class="module-name">Bill of Materials (BOM)</span>
+        </li>
+        <li class="module-item">
+          <span class="badge badge-ready">Ready</span>
+          <span class="module-name">Quality Control (QC)</span>
+        </li>
+        <li class="module-item">
+          <span class="badge badge-planned">Planned</span>
+          <span class="module-name">Inventory Integration</span>
+        </li>
+        <li class="module-item">
+          <span class="badge badge-planned">Planned</span>
+          <span class="module-name">AI Schedule Optimization</span>
+        </li>
+        <li class="module-item">
+          <span class="badge badge-planned">Planned</span>
+          <span class="module-name">Paystack Materials Procurement</span>
+        </li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>Platform Invariants</h2>
+      <div class="invariants">
+        <div class="invariant-chip">Build Once Use Infinitely</div>
+        <div class="invariant-chip">Mobile First</div>
+        <div class="invariant-chip">PWA First</div>
+        <div class="invariant-chip">Offline First</div>
+        <div class="invariant-chip">Nigeria First</div>
+        <div class="invariant-chip">Africa First</div>
+        <div class="invariant-chip">Vendor Neutral AI</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>API Status</h2>
+      <div class="api-status">
+        <span class="dot"></span>
+        Cloudflare Workers API — <code style="color:#7dd3fc">/health</code> · <code style="color:#7dd3fc">/api/production/mgmt/*</code>
+      </div>
+    </div>
+
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
