@@ -23,7 +23,7 @@ id = "a6155e7a95564dd0af7d99211bce618e"
 [[d1_databases]]
 binding = "DB"
 database_name = "webwaka-production-db-dev"
-database_id = "00000000-0000-0000-0000-000000000001"
+database_id = "ee93377c-8000-45d6-ae54-f0d4c588bf04"
 
 # ─── Staging Environment ──────────────────────────────────────────────────────
 [env.staging]
@@ -42,8 +42,8 @@ id = "599e5527254b4bdc9fd9844a2544a6be"
 
 [[env.staging.d1_databases]]
 binding = "DB"
-database_name = "webwaka-production-db-staging"
-database_id = "REPLACE_WITH_PRODUCTION_STAGING_DB_ID"
+database_name = "modules_prod"
+database_id = "ee93377c-8000-45d6-ae54-f0d4c588bf04"
 
 # ─── Production Environment ───────────────────────────────────────────────────
 [env.production]
@@ -62,9 +62,8 @@ id = "e7996f52bc0046aa945c7aa22b15c890"
 
 [[env.production.d1_databases]]
 binding = "DB"
-database_name = "webwaka-production-db-prod"
-database_id = "REPLACE_WITH_PRODUCTION_PROD_DB_ID"
+database_name = "modules_prod"
+database_id = "ee93377c-8000-45d6-ae54-f0d4c588bf04"
 
-# NOTE: Replace all PLACEHOLDER_* values with real Cloudflare resource IDs
-# before deploying. JWT_SECRET must be set as a Cloudflare Workers Secret
-# (not in wrangler.toml) using: wrangler secret put JWT_SECRET
+# NOTE: JWT_SECRET must be set as a Cloudflare Workers Secret (not in wrangler.toml)
+# using: wrangler secret put JWT_SECRET
